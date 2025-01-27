@@ -62,7 +62,10 @@ export default function Form({ publishers }: { publishers: PublisherField[] }) {
 
           {/* Publisher Name */}
           <div className="mb-6 min-w-[40%] max-w-[100%]">
-            <label htmlFor="publisher" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="publisher"
+              className="mb-2 block text-sm font-medium"
+            >
               Choose a Publisher
             </label>
             <div className="relative">

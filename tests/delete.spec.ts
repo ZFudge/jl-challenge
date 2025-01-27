@@ -11,5 +11,7 @@ test("should navigate to dashboard -> campaigns -> delete", async ({
   const campaignId = await el.getAttribute("data-id");
   await page.getByTestId(`delete-campaign-button-${campaignId}`).last().click();
   await page.waitForURL("http://localhost:3000/dashboard/campaigns");
-  await expect(page.getByTestId(`campaign-row-${campaignId}`)).not.toBeVisible();
+  await expect(
+    page.getByTestId(`campaign-row-${campaignId}`),
+  ).not.toBeVisible();
 });

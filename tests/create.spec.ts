@@ -1,8 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("should navigate to dashboard -> campaigns", async ({
-  page,
-}) => {
+test("should navigate to dashboard -> campaigns", async ({ page }) => {
   // Start from the index page (the baseURL is set via the webServer in the playwright.config.ts)
   await page.goto("http://localhost:3000/dashboard");
   await expect(page.locator("h1")).toContainText("Dashboard");
@@ -25,7 +23,9 @@ test("should navigate to dashboard -> campaigns -> create", async ({
     "Create Campaign",
   );
 
-  await page.getByPlaceholder("Enter Campaign Name").fill("This Is a Test Name");
+  await page
+    .getByPlaceholder("Enter Campaign Name")
+    .fill("This Is a Test Name");
   await page.getByTestId("publisher-select").selectOption({
     label: "Code Book",
   });
