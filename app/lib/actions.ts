@@ -200,7 +200,7 @@ export async function updateCampaign(
   }
 
   let status = "active";
-  let { publisherId, budget, gender, age } = validatedFields.data;
+  let { publisherId, name, budget, gender, age } = validatedFields.data;
   const budgetInCents = budget * 100;
   let devices: string | null | undefined | Record<string, string> =
     validatedFields.data.devices;
@@ -234,19 +234,21 @@ export async function updateCampaign(
           campaigns
         SET
           publisher_id = $1,
-          budget = $2,
-          status = $3,
-          startDate = $4,
-          endDate = $5,
-          devices = $6,
-          geo = $7,
-          gender = $8,
-          age = $9
+          name = $2,
+          budget = $3,
+          status = $4,
+          startDate = $5,
+          endDate = $6,
+          devices = $7,
+          geo = $8,
+          gender = $9,
+          age = $10
         WHERE
-          id = $10
+          id = $11
       `,
       values: [
         publisherId,
+        name,
         budgetInCents,
         status,
         startDate,

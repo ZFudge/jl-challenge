@@ -1,29 +1,47 @@
-Requires Make, docker, pnpm, and curl
+# Project Name
 
-Using the template provided in .env-example, create a .env file in the root directory.
-Feel free to replace these example settings with your own.
+## Prerequisites
+- Make
+- Docker
+- pnpm
+- curl
 
-To run the project:
+## Setup
 
-# generate a secret for authentication. this will be stored in your .env file.
-make secret
+1. Create a `.env` file in the root directory using the template provided in `.env-example`.
+   > Feel free to replace the example settings with your own.
 
-# install node modules
-make install
+2. Generate a secret for authentication (will be stored in your `.env` file):
+   ```bash
+   make secret
+   ```
 
-# start PostgreSQL container
-make db
+3. Install dependencies:
+   ```bash
+   make install
+   ```
 
-# run dev server
-make dev
+4. Start PostgreSQL container:
+   ```bash
+   make db
+   ```
 
-# seed database
-make seed
+5. Run development server:
+   ```bash
+   make dev
+   ```
 
-Now, navigate to http://localhost:3000/ and log in with credentials
-email: testuser@test.com
-pw: pw12345
+6. Seed the database:
+   ```bash
+   make seed
+   ```
 
-Alternatively, you can log in with credentials
-email: rtimey@business2.com
-pw: pw12345
+## Usage
+
+Navigate to http://localhost:3000/ and log in with either of these credentials:
+
+| Email | Password |
+|-------|----------|
+| testuser@test.com | pw12345 |
+| joe@business1.com | pw12345 |
+| rtimey@business2.com | pw12345 |
