@@ -63,12 +63,17 @@ export default function Form({ publishers }: { publishers: PublisherField[] }) {
               className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
               defaultValue=""
               aria-describedby="publisher-error"
+              data-testid="publisher-select"
             >
               <option value="" disabled>
                 Select a Publisher
               </option>
-              {publishers.map((publisher) => (
-                <option key={publisher.id} value={publisher.id}>
+              {publishers.map((publisher, index) => (
+                <option
+                  key={publisher.id}
+                  value={publisher.id}
+                  data-testid={`publisher-option-${index}`}
+                >
                   {publisher.name}
                 </option>
               ))}
@@ -129,7 +134,9 @@ export default function Form({ publishers }: { publishers: PublisherField[] }) {
         >
           Cancel
         </Link>
-        <Button type="submit">Create Campaign</Button>
+        <Button type="submit" data-testid="create-campaign-button">
+          Create Campaign
+        </Button>
       </div>
     </form>
   );

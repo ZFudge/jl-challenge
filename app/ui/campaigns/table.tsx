@@ -1,9 +1,9 @@
 import Image from "next/image";
 import { UpdateCampaign, DeleteCampaign } from "@/app/ui/campaigns/buttons";
 import CampaignStatus from "@/app/ui/campaigns/status";
-import { formatDateToLocal, formatCurrency } from "@/app/lib/utils";
 import { fetchFilteredCampaigns } from "@/app/lib/data";
 import { CampaignsTable as CampaignsTableType } from "@/app/lib/definitions";
+import { formatDateToLocal, formatCurrency } from "@/app/lib/utils";
 
 export default async function CampaignsTable({
   query,
@@ -82,12 +82,17 @@ export default async function CampaignsTable({
               </tr>
             </thead>
             <tbody className="bg-white">
-              {campaigns?.map((campaign: CampaignsTableType) => (
+              {campaigns?.map((campaign: CampaignsTableType, index: number) => (
                 <tr
                   key={campaign.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  data-testid={`campaign-row-${index}`}
+                  data-id={campaign.id}
                 >
-                  <td className="whitespace-nowrap px-3 py-3">
+                  <td
+                    className="whitespace-nowrap px-3 py-3"
+                    data-testid={`campaign-name-${campaign.id}`}
+                  >
                     {campaign.name}
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
@@ -99,13 +104,21 @@ export default async function CampaignsTable({
                         height={28}
                         alt={`${campaign.name}'s profile picture`}
                       />
-                      <p>{campaign.publishername}</p>
+                      <p
+                        data-testid={`campaign-publisher-${campaign.id}`}
+                        className="text-sm text-gray-500"
+                      >
+                        {campaign.publishername}
+                      </p>
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {campaign.email}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3">
+                  <td
+                    data-testid={`campaign-budget-${campaign.id}`}
+                    className="whitespace-nowrap px-3 py-3"
+                  >
                     {formatCurrency(campaign.budget)}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">

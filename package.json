@@ -4,6 +4,8 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "lint": "next lint --no-cache",
+    "pw": "pnpm exec playwright test",
+    "pw:sr": "pnpm exec playwright show-report",
     "prettier": "prettier --check \"**/*.{ts,tsx}\"",
     "prettier:write": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^15.1.5",
+    "@playwright/test": "^1.50.0",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "22.10.1",
     "@types/pg": "^8.11.10",
