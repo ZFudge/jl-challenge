@@ -1,81 +1,79 @@
 import {
-  CustomerField,
-  CustomersTableType,
-  InvoiceForm,
-  InvoicesTable,
-  LatestInvoiceRaw,
-  Revenue,
+  CampaignForm,
+  CampaignsTable,
+  LatestCampaignRaw,
+  PublisherField,
+  PublishersTableType,
+  Spend,
 } from "./definitions";
 import { formatCurrency } from "./utils";
 import client from "@/app/lib/db";
 
-export async function fetchRevenue() {
+export async function fetchSpend() {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const data = await client.query<Revenue>(`SELECT * FROM revenue`);
-
-    // console.log('Data fetch completed after 3 seconds.');
-
+    const data = await client.query<Spend>(`SELECT * FROM spend`);
     return data.rows;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    throw new Error("Failed to fetch spend data.");
   }
 }
 
-export async function fetchLatestInvoices() {
+export async function fetchLatestCampaigns() {
   try {
-    const data = await client.query<LatestInvoiceRaw>(`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`);
+    const data = await client.query<LatestCampaignRaw>(`
+      SELECT
+        campaigns.budget,
+        publishers.name AS publishername,
+        publishers.image_url,
+        publishers.email,
+        campaigns.id,
+        campaigns.name
+      FROM
+        campaigns
+      JOIN
+        publishers ON campaigns.publisher_id = publishers.id
+      ORDER BY
+        campaigns.date DESC
+      LIMIT 5;
+    `);
 
-    const latestInvoices = data.rows.map((invoice: LatestInvoiceRaw) => ({
-      ...invoice,
-      amount: formatCurrency(invoice.amount),
+    const latestCampaigns = data.rows.map((campaign: LatestCampaignRaw) => ({
+      ...campaign,
+      budget: formatCurrency(campaign.budget),
     }));
-    return latestInvoices;
+    return latestCampaigns;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch the latest invoices.");
+    throw new Error("Failed to fetch the latest campaigns.");
   }
 }
 
 export async function fetchCardData() {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = client.query(`SELECT COUNT(*) FROM invoices`);
-    const customerCountPromise = client.query(`SELECT COUNT(*) FROM customers`);
-    const invoiceStatusPromise = client.query(`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`);
+    const campaignCountPromise = client.query(`SELECT COUNT(*) FROM campaigns`);
+    const publisherCountPromise = client.query(`SELECT COUNT(*) FROM publishers`);
+    const campaignStatusPromise = client.query(`SELECT
+         SUM(CASE WHEN status = 'paid' THEN budget ELSE 0 END) AS "paid",
+         SUM(CASE WHEN status = 'pending' THEN budget ELSE 0 END) AS "pending"
+         FROM campaigns`);
 
     const data = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
+      campaignCountPromise,
+      publisherCountPromise,
+      campaignStatusPromise,
     ]);
 
-    const numberOfInvoices = Number(data[0].rows[0].count ?? "0");
-    const numberOfCustomers = Number(data[1].rows[0].count ?? "0");
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? "0");
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? "0");
+    const numberOfCampaigns = Number(data[0].rows[0].count ?? "0");
+    const numberOfPublishers = Number(data[1].rows[0].count ?? "0");
+    const totalPaidCampaigns = formatCurrency(data[2].rows[0].paid ?? "0");
+    const totalPendingCampaigns = formatCurrency(data[2].rows[0].pending ?? "0");
 
     return {
-      numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
+      numberOfPublishers,
+      numberOfCampaigns,
+      totalPaidCampaigns,
+      totalPendingCampaigns,
     };
   } catch (error) {
     console.error("Database Error:", error);
@@ -84,57 +82,64 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
+export async function fetchFilteredCampaigns(
   query: string,
   currentPage: number,
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await client.query<InvoicesTable>({
+    const campaigns = await client.query<CampaignsTable>({
       text: `
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE $1 OR
-        customers.email ILIKE $1 OR
-        invoices.amount::text ILIKE $1 OR
-        invoices.date::text ILIKE $1 OR
-        invoices.status ILIKE $1
-      ORDER BY invoices.date DESC
-      LIMIT $2 OFFSET $3
-    `,
+        SELECT
+          campaigns.id,
+          campaigns.budget,
+          campaigns.date,
+          campaigns.status,
+          campaigns.name,
+          publishers.name AS publishername,
+          publishers.email,
+          publishers.image_url
+        FROM
+          campaigns
+        JOIN
+          publishers ON campaigns.publisher_id = publishers.id
+        WHERE
+          publishers.name ILIKE $1 OR
+          publishers.email ILIKE $1 OR
+          campaigns.budget::text ILIKE $1 OR
+          campaigns.date::text ILIKE $1 OR
+          campaigns.status ILIKE $1
+        ORDER BY
+          campaigns.date DESC
+        LIMIT $2 OFFSET $3
+      `,
       values: [`%${query}%`, ITEMS_PER_PAGE, offset],
     });
 
-    return invoices.rows;
+    return campaigns.rows;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch invoices.");
+    throw new Error("Failed to fetch campaigns.");
   }
 }
 
-export async function fetchInvoicesPages(query: string) {
+export async function fetchCampaignsPages(query: string) {
   try {
     const count = await client.query({
       text: `
-        SELECT COUNT(*)
-        FROM invoices
-        JOIN customers ON invoices.customer_id = customers.id
+        SELECT
+          COUNT(*)
+        FROM
+          campaigns
+        JOIN
+          publishers ON campaigns.publisher_id = publishers.id
         WHERE
-          customers.name ILIKE $1 OR
-          customers.email ILIKE $1 OR
-          invoices.amount::text ILIKE $1 OR
-          invoices.date::text ILIKE $1 OR
-          invoices.status ILIKE $1
+          publishers.name ILIKE $1 OR
+          publishers.email ILIKE $1 OR
+          campaigns.budget::text ILIKE $1 OR
+          campaigns.date::text ILIKE $1 OR
+          campaigns.status ILIKE $1;
       `,
       values: [`%${query}%`],
     });
@@ -143,88 +148,99 @@ export async function fetchInvoicesPages(query: string) {
     return totalPages;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch total number of invoices.");
+    throw new Error("Failed to fetch total number of campaigns.");
   }
 }
 
-export async function fetchInvoiceById(id: string) {
+export async function fetchCampaignById(id: string) {
   try {
-    const data = await client.query<InvoiceForm>({
+    const data = await client.query<CampaignForm>({
       text: `
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = $1;
-    `,
+        SELECT
+          campaigns.id,
+          campaigns.name,
+          campaigns.publisher_id,
+          campaigns.budget
+        FROM
+          campaigns
+        WHERE
+          campaigns.id = $1;
+      `,
       values: [id],
     });
 
-    const invoice = data.rows.map((invoice: InvoiceForm) => ({
-      ...invoice,
-      // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
+    const campaign = data.rows.map((campaign: CampaignForm) => ({
+      ...campaign,
+      // Convert budget from cents to dollars
+      budget: campaign.budget / 100,
     }));
 
-    return invoice[0];
+    return campaign[0];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch invoice.");
+    throw new Error("Failed to fetch campaign.");
   }
 }
 
-export async function fetchCustomers() {
+export async function fetchPublishers() {
   try {
-    const data = await client.query<CustomerField>(`
+    const data = await client.query<PublisherField>(`
       SELECT
         id,
         name
-      FROM customers
-      ORDER BY name ASC
+      FROM
+        publishers
+      ORDER BY
+        name ASC;
     `);
 
-    const customers = data.rows;
-    return customers;
+    const publishers = data.rows;
+    return publishers;
   } catch (err) {
     console.error("Database Error:", err);
-    throw new Error("Failed to fetch all customers.");
+    throw new Error("Failed to fetch all publishers.");
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchFilteredPublishers(query: string) {
   try {
-    const data = await client.query<CustomersTableType>({
+    const data = await client.query<PublishersTableType>({
       text: `
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name ILIKE $1 OR
-        customers.email ILIKE $1
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `,
+        SELECT
+          publishers.id,
+          publishers.name,
+          publishers.email,
+          publishers.image_url,
+          COUNT(campaigns.id) AS total_campaigns,
+          SUM(CASE WHEN campaigns.status = 'pending' THEN campaigns.budget ELSE 0 END) AS total_pending,
+          SUM(CASE WHEN campaigns.status = 'paid' THEN campaigns.budget ELSE 0 END) AS total_paid
+        FROM
+          publishers
+        LEFT JOIN
+          campaigns ON publishers.id = campaigns.publisher_id
+        WHERE
+          publishers.name ILIKE $1 OR
+          publishers.email ILIKE $1
+        GROUP BY
+          publishers.id,
+          publishers.name,
+          publishers.email,
+          publishers.image_url
+        ORDER BY
+          publishers.name ASC;
+      `,
       values: [`%${query}%`],
     });
 
-    const customers = data.rows.map((customer: CustomersTableType) => ({
-      ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
+    const publishers = data.rows.map((publisher: PublishersTableType) => ({
+      ...publisher,
+      total_pending: formatCurrency(publisher.total_pending),
+      total_paid: formatCurrency(publisher.total_paid),
     }));
 
-    return customers;
+    return publishers;
   } catch (err) {
     console.error("Database Error:", err);
-    throw new Error("Failed to fetch customer table.");
+    throw new Error("Failed to fetch publisher table.");
   }
 }

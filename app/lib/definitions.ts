@@ -1,7 +1,3 @@
-// This file contains type definitions for your data.
-// It describes the shape of the data, and what data type each property should accept.
-// For simplicity of teaching, we're manually defining these types.
-// However, these types are generated automatically if you're using an ORM such as Prisma.
 export type User = {
   id: string;
   name: string;
@@ -9,82 +5,81 @@ export type User = {
   password: string;
 };
 
-export type Customer = {
+export type Publisher = {
   id: string;
   name: string;
   email: string;
   image_url: string;
 };
 
-export type Invoice = {
+export type Campaign = {
   id: string;
-  customer_id: string;
-  amount: number;
+  publisher_id: string;
+  budget: number;
   date: string;
-  // In TypeScript, this is called a string union type.
-  // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
-  status: "pending" | "paid";
+  status: "pending" | "active" | "archived";
 };
 
-export type Revenue = {
+export type Spend = {
   month: string;
-  revenue: number;
+  spend: number;
 };
 
-export type LatestInvoice = {
+export type LatestCampaign = {
   id: string;
   name: string;
   image_url: string;
   email: string;
-  amount: string;
+  budget: string;
 };
 
-// The database returns a number for amount, but we later format it to a string with the formatCurrency function
-export type LatestInvoiceRaw = Omit<LatestInvoice, "amount"> & {
-  amount: number;
+// The database returns a number for budget, but we later format it to a string with the formatCurrency function
+export type LatestCampaignRaw = Omit<LatestCampaign, "budget"> & {
+  budget: number;
 };
 
-export type InvoicesTable = {
+export type CampaignsTable = {
   id: string;
-  customer_id: string;
+  publisher_id: string;
   name: string;
+  publishername: string;
   email: string;
   image_url: string;
   date: string;
-  amount: number;
+  budget: number;
   status: "pending" | "paid";
 };
 
-export type CustomersTableType = {
+export type PublishersTableType = {
   id: string;
   name: string;
   email: string;
   image_url: string;
-  total_invoices: number;
+  total_campaigns: number;
   total_pending: number;
   total_paid: number;
 };
 
-export type FormattedCustomersTable = {
+export type FormattedPublishersTable = {
   id: string;
   name: string;
   email: string;
   image_url: string;
-  total_invoices: number;
+  total_campaigns: number;
   total_pending: string;
   total_paid: string;
 };
 
-export type CustomerField = {
+export type PublisherField = {
   id: string;
   name: string;
 };
 
-export type InvoiceForm = {
+export type CampaignForm = {
   id: string;
-  customer_id: string;
-  amount: number;
-  status: "pending" | "paid";
+  name: string;
+  publisher_id: string;
+  budget: number;
 };
 
 export type Breadcrumb = {
