@@ -6,10 +6,11 @@ import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { AuthError } from "next-auth";
 import client from "./db";
+import { deviceNameToIdMapping } from "./placeholder-data";
 
 const FormSchema = z.object({
   id: z.string(),
-  name: z.string().min(3, { message: "Please enter a campaign name, at least 3 characters." }),
+  name: z.string(),
   publisherId: z.string({
     invalid_type_error: "Please select a publisher.",
   }),
@@ -19,7 +20,7 @@ const FormSchema = z.object({
   date: z.string(),
   gender: z.string().or(z.null()),
   age: z.string().or(z.null()),
-  // devices: z.string().or(z.null()),
+  devices: z.string().or(z.null()),
   // geo: z.string().or(z.null()),
 });
 
@@ -47,6 +48,7 @@ export async function createCampaign(prevState: State, formData: FormData) {
     name: formData.get("name"),
     gender: formData.get("gender"),
     age: formData.get("age"),
+    devices: formData.get("devices"),
   });
   console.log(`createCampaign validatedFields: ${JSON.stringify(validatedFields)}`);
 
@@ -64,6 +66,15 @@ export async function createCampaign(prevState: State, formData: FormData) {
   const date = new Date().toISOString().split("T")[0];
   // TODO: set status dynamically depending on start/end date
   let status = "active";
+  let devices: string | undefined | null | Record<string, string> =
+    validatedFields.data.devices;
+  if (devices) {
+    devices = Object.fromEntries(
+      devices.split(",").map((name) => [deviceNameToIdMapping[name], name]),
+    );
+  } else {
+    devices = null;
+  }
 
   // Insert data into the database
   try {
@@ -82,7 +93,7 @@ export async function createCampaign(prevState: State, formData: FormData) {
         )
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `,
-      values: [name, publisherId, budgetInCents, status, date, gender, age, null, null],
+      values: [name, publisherId, budgetInCents, status, date, gender, age, devices, null],
     });
   } catch (error) {
     // If a database error occurs, return a more specific error.
@@ -107,7 +118,7 @@ export async function updateCampaign(
     name: formData.get("name"),
     gender: formData.get("gender"),
     age: formData.get("age"),
-    // devices: formData.get("devices"),
+    devices: formData.get("devices"),
     // geo: formData.get("geo"),
   });
   console.log(`updateCampaign validatedFields: ${JSON.stringify(validatedFields)}`);
@@ -124,6 +135,16 @@ export async function updateCampaign(
   const { publisherId, budget, name, gender, age } = validatedFields.data;
   const budgetInCents = budget * 100;
   const date = new Date().toISOString().split("T")[0];
+  let devices: string | null | undefined | Record<string, string> =
+    validatedFields.data.devices;
+  if (devices) {
+    devices = Object.fromEntries(
+      devices.split(",").map((name) => [deviceNameToIdMapping[name], name]),
+    );
+  } else {
+    devices = null;
+  }
+
   try {
     await client.query({
       text: `
@@ -141,7 +162,7 @@ export async function updateCampaign(
           geo = $9
         WHERE id = $10
       `,
-      values: [name, publisherId, budgetInCents, status, date, gender, age, null, null, id],
+      values: [name, publisherId, budgetInCents, status, date, gender, age, devices, null, id],
     });
   } catch (error) {
     return { message: "Database Error: Failed to Update Campaign." };
