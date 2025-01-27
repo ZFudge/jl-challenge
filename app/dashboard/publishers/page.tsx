@@ -1,9 +1,9 @@
 import { Metadata } from "next";
-import { fetchFilteredCustomers } from "@/app/lib/data";
-import CustomersTable from "@/app/ui/customers/table";
+import { fetchFilteredPublishers } from "@/app/lib/data";
+import PublishersTable from "@/app/ui/publishers/table";
 
 export const metadata: Metadata = {
-  title: "Customers",
+  title: "Publishers",
 };
 
 export default async function Page(props: {
@@ -15,11 +15,11 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
 
-  const customers = await fetchFilteredCustomers(query);
+  const publishers = await fetchFilteredPublishers(query);
 
   return (
     <main>
-      <CustomersTable customers={customers} />
+      <PublishersTable publishers={publishers} />
     </main>
   );
 }
