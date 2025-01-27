@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 
-
 test("should navigate to dashboard -> campaigns -> edit", async ({ page }) => {
   // Start from the index page (the baseURL is set via the webServer in the playwright.config.ts)
 
@@ -11,7 +10,9 @@ test("should navigate to dashboard -> campaigns -> edit", async ({ page }) => {
   const campaignId = await el.getAttribute("data-id");
   await page.getByTestId(`update-campaign-button-${campaignId}`).last().click();
 
-  await page.waitForURL(`http://localhost:3000/dashboard/campaigns/${campaignId}/edit`);
+  await page.waitForURL(
+    `http://localhost:3000/dashboard/campaigns/${campaignId}/edit`,
+  );
   await expect(page.getByTestId("edit-campaign-button")).toBeVisible();
   await page.getByPlaceholder("Enter USD Budget").fill("777");
   await page.getByPlaceholder("Enter Campaign Name").fill("Chocolate Sauce");

@@ -19,7 +19,11 @@ export default async function CardWrapper() {
 
   return (
     <>
-      <Card title="Total Campaigns" value={numberOfCampaigns} type="campaigns" />
+      <Card
+        title="Total Campaigns"
+        value={numberOfCampaigns}
+        type="campaigns"
+      />
     </>
   );
 }

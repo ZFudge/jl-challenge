@@ -1,4 +1,4 @@
-# Project Name
+# JL Challenge
 
 ## Prerequisites
 - Make
@@ -45,3 +45,19 @@ Navigate to http://localhost:3000/ and log in with either of these credentials:
 | testuser@test.com | pw12345 |
 | joe@business1.com | pw12345 |
 | rtimey@business2.com | pw12345 |
+
+
+## Testing with playwright
+
+Start the server with fresh database:
+```bash
+make all
+```
+seed the database:
+```bash
+make seed
+```
+lastly, run the tests with:
+```bash
+pnpm pw
+```

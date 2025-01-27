@@ -73,7 +73,9 @@ export async function fetchCardData() {
         `,
       values: [session?.user?.email],
     });
-    const publisherCountPromise = client.query(`SELECT COUNT(*) FROM publishers`);
+    const publisherCountPromise = client.query(
+      `SELECT COUNT(*) FROM publishers`,
+    );
     const campaignStatusPromise = client.query(`SELECT
          SUM(CASE WHEN status = 'paid' THEN budget ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN budget ELSE 0 END) AS "pending"
@@ -88,7 +90,9 @@ export async function fetchCardData() {
     const numberOfCampaigns = Number(data[0].rows[0].count ?? "0");
     const numberOfPublishers = Number(data[1].rows[0].count ?? "0");
     const totalPaidCampaigns = formatCurrency(data[2].rows[0].paid ?? "0");
-    const totalPendingCampaigns = formatCurrency(data[2].rows[0].pending ?? "0");
+    const totalPendingCampaigns = formatCurrency(
+      data[2].rows[0].pending ?? "0",
+    );
 
     return {
       numberOfPublishers,

@@ -2,10 +2,7 @@ import CardWrapper from "@/app/ui/dashboard/cards";
 import LatestCampaigns from "@/app/ui/dashboard/latest-campaigns";
 import { lusitana } from "@/app/ui/fonts";
 import { Suspense } from "react";
-import {
-  LatestCampaignsSkeleton,
-  CardsSkeleton,
-} from "@/app/ui/skeletons";
+import { LatestCampaignsSkeleton, CardsSkeleton } from "@/app/ui/skeletons";
 
 export default async function Page() {
   return (
