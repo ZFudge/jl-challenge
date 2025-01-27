@@ -125,6 +125,97 @@ export default function EditCampaignForm({
               ))}
           </div>
         </div>
+        {/* end budget */}
+
+        {/* gender */}
+        <div className="mb-6 min-w-[40%] max-w-[100%]">
+          <label htmlFor="gender" className="mb-2 block text-sm font-medium">
+            Choose gender
+          </label>
+          <div className="relative">
+            <select
+              id="gender"
+              name="gender"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue={campaign.gender || ""}
+              aria-describedby="gender-error"
+            >
+              <option value="" disabled>
+                Select a gender
+              </option>
+              <option key={"male"} value="male">
+                Male
+              </option>
+              <option key={"female"} value="female">
+                Female
+              </option>
+            </select>
+            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+          </div>
+
+          <div id="gender-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.gender && (
+              <p
+                className="mt-2 text-sm text-red-500"
+                key={state.errors?.gender.toString()}
+              >
+                {state.errors?.gender}
+              </p>
+            )}
+          </div>
+        </div>
+        {/* end gender */}
+
+        {/* age */}
+        <div className="mb-6 min-w-[40%] max-w-[100%]">
+          <label htmlFor="age" className="mb-2 block text-sm font-medium">
+            Choose age
+          </label>
+          <div className="relative">
+            <select
+              id="age"
+              name="age"
+              className="peer block w-full cursor-pointer rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
+              defaultValue={campaign.age || ""}
+              aria-describedby="age-error"
+            >
+              <option value="" disabled>
+                Select an age
+              </option>
+              <option key={"18-24"} value="18-24">
+                18-24
+              </option>
+              <option key={"25-34"} value="25-34">
+                25-34
+              </option>
+              <option key={"35-44"} value="35-44">
+                35-44
+              </option>
+              <option key={"45-54"} value="45-54">
+                45-54
+              </option>
+              <option key={"55-64"} value="55-64">
+                55-64
+              </option>
+              <option key={"65+"} value="65+">
+                65+
+              </option>
+            </select>
+            <UserCircleIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+          </div>
+
+          <div id="age-error" aria-live="polite" aria-atomic="true">
+            {state.errors?.age && (
+              <p
+                className="mt-2 text-sm text-red-500"
+                key={state.errors?.age.toString()}
+              >
+                {state.errors?.age}
+              </p>
+            )}
+          </div>
+        </div>
+        {/* end age */}
 
         <div aria-live="polite" aria-atomic="true">
           {state.message ? (

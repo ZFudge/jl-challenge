@@ -28,7 +28,11 @@ export async function fetchLatestCampaigns() {
         publishers.image_url,
         publishers.email,
         campaigns.id,
-        campaigns.name
+        campaigns.name,
+        campaigns.gender,
+        campaigns.age,
+        campaigns.devices,
+        campaigns.geo
       FROM
         campaigns
       JOIN
@@ -97,6 +101,10 @@ export async function fetchFilteredCampaigns(
           campaigns.date,
           campaigns.status,
           campaigns.name,
+          campaigns.gender,
+          campaigns.age,
+          campaigns.devices,
+          campaigns.geo,
           publishers.name AS publishername,
           publishers.email,
           publishers.image_url
@@ -160,7 +168,11 @@ export async function fetchCampaignById(id: string) {
           campaigns.id,
           campaigns.name,
           campaigns.publisher_id,
-          campaigns.budget
+          campaigns.budget,
+          campaigns.gender,
+          campaigns.age,
+          campaigns.devices,
+          campaigns.geo
         FROM
           campaigns
         WHERE

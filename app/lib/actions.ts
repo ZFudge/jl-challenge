@@ -17,6 +17,10 @@ const FormSchema = z.object({
     .number()
     .gt(0, { message: "Please enter an budget greater than $0." }),
   date: z.string(),
+  gender: z.string().or(z.null()),
+  age: z.string().or(z.null()),
+  // devices: z.string().or(z.null()),
+  // geo: z.string().or(z.null()),
 });
 
 const CreateCampaign = FormSchema.omit({ id: true, date: true });
@@ -27,6 +31,10 @@ export type State = {
     publisherId?: string[];
     budget?: string[];
     name?: string[];
+    gender?: string[];
+    age?: string[];
+    devices?: string[];
+    geo?: string[];
   };
   message?: string | null;
 };
@@ -37,6 +45,8 @@ export async function createCampaign(prevState: State, formData: FormData) {
     publisherId: formData.get("publisherId"),
     budget: formData.get("budget"),
     name: formData.get("name"),
+    gender: formData.get("gender"),
+    age: formData.get("age"),
   });
   console.log(`createCampaign validatedFields: ${JSON.stringify(validatedFields)}`);
 
@@ -49,7 +59,7 @@ export async function createCampaign(prevState: State, formData: FormData) {
   }
 
   // Prepare data for insertion into the database
-  const { publisherId, budget, name } = validatedFields.data;
+  const { publisherId, budget, name, gender, age } = validatedFields.data;
   const budgetInCents = budget * 100;
   const date = new Date().toISOString().split("T")[0];
   // TODO: set status dynamically depending on start/end date
@@ -64,11 +74,15 @@ export async function createCampaign(prevState: State, formData: FormData) {
           publisher_id,
           budget,
           status,
-          date
+          date,
+          gender,
+          age,
+          devices,
+          geo
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `,
-      values: [name, publisherId, budgetInCents, status, date],
+      values: [name, publisherId, budgetInCents, status, date, gender, age, null, null],
     });
   } catch (error) {
     // If a database error occurs, return a more specific error.
@@ -91,6 +105,10 @@ export async function updateCampaign(
     publisherId: formData.get("publisherId"),
     budget: formData.get("budget"),
     name: formData.get("name"),
+    gender: formData.get("gender"),
+    age: formData.get("age"),
+    // devices: formData.get("devices"),
+    // geo: formData.get("geo"),
   });
   console.log(`updateCampaign validatedFields: ${JSON.stringify(validatedFields)}`);
 
@@ -103,7 +121,7 @@ export async function updateCampaign(
   // TODO: set status dynamically depending on start/end date
   let status = "active";
 
-  const { publisherId, budget, name } = validatedFields.data;
+  const { publisherId, budget, name, gender, age } = validatedFields.data;
   const budgetInCents = budget * 100;
   const date = new Date().toISOString().split("T")[0];
   try {
@@ -116,10 +134,14 @@ export async function updateCampaign(
           publisher_id = $2,
           budget = $3,
           status = $4,
-          date = $5
-        WHERE id = $6
+          date = $5,
+          gender = $6,
+          age = $7,
+          devices = $8,
+          geo = $9
+        WHERE id = $10
       `,
-      values: [name, publisherId, budgetInCents, status, date, id],
+      values: [name, publisherId, budgetInCents, status, date, gender, age, null, null, id],
     });
   } catch (error) {
     return { message: "Database Error: Failed to Update Campaign." };

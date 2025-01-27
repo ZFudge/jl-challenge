@@ -69,8 +69,12 @@ type Campaign = {
   owner_id: string;
   budget: number;
   name: string;
-  status: "active" | "pending";
+  status: "active" | "pending" | "archived" | "paused";
   date: string;
+  gender?: string;
+  age?: string;
+  devices?: string;
+  geo?: string;
 };
 
 const campaigns: Campaign[] = [

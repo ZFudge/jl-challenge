@@ -39,20 +39,28 @@ async function seedCampaigns() {
       publisher_id UUID NOT NULL,
       budget INT NOT NULL,
       status VARCHAR(255) NOT NULL,
-      date DATE NOT NULL
+      date DATE NOT NULL,
+      gender VARCHAR(255),
+      age VARCHAR(255),
+      devices JSONB,
+      geo JSONB
     );
   `);
 
   const insertedCampaigns = await Promise.all(
     campaigns.map((campaign) =>
       client.query({
-        text: "INSERT INTO campaigns (name, publisher_id, budget, status, date) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING",
+        text: "INSERT INTO campaigns (name, publisher_id, budget, date, status, gender, age, devices, geo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING",
         values: [
           campaign.name,
           campaign.publisher_id,
           campaign.budget,
-          campaign.status,
           campaign.date,
+          campaign.status,
+          null,
+          null,
+          null,
+          null,
         ],
       }),
     ),

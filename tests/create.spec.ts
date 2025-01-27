@@ -39,13 +39,4 @@ test("should navigate to dashboard -> campaigns -> create", async ({
   const budget = page.getByTestId(`campaign-budget-${campaignId}`);
   await expect(name).toContainText("This Is a Test Name");
   await expect(budget).toContainText("$123.00");
-  // await expect(page.getByTestId("campaign-name-0")).toContainText(
-  //   "This Is a Test Name",
-  // );
-  // await expect(page.getByTestId("campaign-publisher-0")).toContainText(
-  //   "Code Book",
-  // );
-  // await expect(page.getByTestId("campaign-budget-0")).toContainText(
-  //   "$123.00",
-  // );
 });

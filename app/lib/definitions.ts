@@ -12,12 +12,14 @@ export type Publisher = {
   image_url: string;
 };
 
+export type Status = "pending" | "active" | "archived" | "paused";
+
 export type Campaign = {
   id: string;
   publisher_id: string;
   budget: number;
   date: string;
-  status: "pending" | "active" | "archived";
+  status: Status;
 };
 
 export type Spend = {
@@ -47,7 +49,7 @@ export type CampaignsTable = {
   image_url: string;
   date: string;
   budget: number;
-  status: "pending" | "paid";
+  status: Status;
 };
 
 export type PublishersTableType = {
@@ -80,6 +82,10 @@ export type CampaignForm = {
   name: string;
   publisher_id: string;
   budget: number;
+  gender: string;
+  age: string;
+  devices: string;
+  geo: string;
 };
 
 export type Breadcrumb = {
