@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import {
   CampaignForm,
   CampaignsTable,
@@ -20,27 +21,32 @@ export async function fetchSpend() {
 }
 
 export async function fetchLatestCampaigns() {
+  const session = await auth();
   try {
-    const data = await client.query<LatestCampaignRaw>(`
-      SELECT
-        campaigns.budget,
-        publishers.name AS publishername,
-        publishers.image_url,
-        publishers.email,
-        campaigns.id,
-        campaigns.name,
-        campaigns.gender,
-        campaigns.age,
-        campaigns.devices,
-        campaigns.geo
-      FROM
-        campaigns
-      JOIN
-        publishers ON campaigns.publisher_id = publishers.id
-      ORDER BY
-        campaigns.date DESC
-      LIMIT 5;
-    `);
+    const data = await client.query<LatestCampaignRaw>({
+      text: `
+        SELECT
+          campaigns.budget,
+          publishers.name,
+          publishers.image_url,
+          publishers.email,
+          campaigns.id,
+          campaigns.devices,
+          campaigns.geo,
+          campaigns.gender,
+          campaigns.age
+        FROM
+          campaigns
+        JOIN
+          publishers ON campaigns.publisher_id = publishers.id
+        WHERE
+          campaigns.owner_id = (SELECT id FROM users WHERE email = $1)
+        ORDER BY
+          campaigns.date DESC
+        LIMIT 5
+      `,
+      values: [session?.user?.email],
+    });
 
     const latestCampaigns = data.rows.map((campaign: LatestCampaignRaw) => ({
       ...campaign,
@@ -54,8 +60,19 @@ export async function fetchLatestCampaigns() {
 }
 
 export async function fetchCardData() {
+  const session = await auth();
   try {
-    const campaignCountPromise = client.query(`SELECT COUNT(*) FROM campaigns`);
+    const campaignCountPromise = client.query({
+      text: `
+        SELECT
+          COUNT(*)
+        FROM
+          campaigns
+        WHERE
+          owner_id = (SELECT id FROM users WHERE email = $1)
+        `,
+      values: [session?.user?.email],
+    });
     const publisherCountPromise = client.query(`SELECT COUNT(*) FROM publishers`);
     const campaignStatusPromise = client.query(`SELECT
          SUM(CASE WHEN status = 'paid' THEN budget ELSE 0 END) AS "paid",
@@ -92,37 +109,39 @@ export async function fetchFilteredCampaigns(
 ) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
+  const session = await auth();
+
   try {
     const campaigns = await client.query<CampaignsTable>({
       text: `
-        SELECT
-          campaigns.id,
-          campaigns.budget,
-          campaigns.date,
-          campaigns.status,
-          campaigns.name,
-          campaigns.gender,
-          campaigns.age,
-          campaigns.devices,
-          campaigns.geo,
-          publishers.name AS publishername,
-          publishers.email,
-          publishers.image_url
-        FROM
-          campaigns
-        JOIN
-          publishers ON campaigns.publisher_id = publishers.id
-        WHERE
-          publishers.name ILIKE $1 OR
-          publishers.email ILIKE $1 OR
-          campaigns.budget::text ILIKE $1 OR
-          campaigns.date::text ILIKE $1 OR
-          campaigns.status ILIKE $1
-        ORDER BY
-          campaigns.date DESC
-        LIMIT $2 OFFSET $3
-      `,
-      values: [`%${query}%`, ITEMS_PER_PAGE, offset],
+      SELECT
+        campaigns.id,
+        campaigns.owner_id,
+        campaigns.budget,
+        campaigns.date,
+        campaigns.status,
+        campaigns.name as name,
+        campaigns.gender,
+        campaigns.age,
+        campaigns.devices,
+        campaigns.geo,
+        publishers.name as publisherName,
+        publishers.email,
+        publishers.image_url
+      FROM campaigns
+      JOIN publishers ON campaigns.publisher_id = publishers.id
+      JOIN users ON campaigns.owner_id = users.id
+      WHERE (
+        publishers.name ILIKE $1 OR
+        publishers.email ILIKE $1 OR
+        campaigns.budget::text ILIKE $1 OR
+        campaigns.date::text ILIKE $1 OR
+        campaigns.status ILIKE $1
+      ) AND users.email = $4
+      ORDER BY campaigns.date DESC
+      LIMIT $2 OFFSET $3
+    `,
+      values: [`%${query}%`, ITEMS_PER_PAGE, offset, session?.user?.email],
     });
 
     return campaigns.rows;
@@ -133,23 +152,22 @@ export async function fetchFilteredCampaigns(
 }
 
 export async function fetchCampaignsPages(query: string) {
+  const session = await auth();
   try {
     const count = await client.query({
       text: `
-        SELECT
-          COUNT(*)
-        FROM
-          campaigns
-        JOIN
-          publishers ON campaigns.publisher_id = publishers.id
-        WHERE
+        SELECT COUNT(*)
+        FROM campaigns
+        JOIN publishers ON campaigns.publisher_id = publishers.id
+        WHERE (
           publishers.name ILIKE $1 OR
           publishers.email ILIKE $1 OR
           campaigns.budget::text ILIKE $1 OR
           campaigns.date::text ILIKE $1 OR
-          campaigns.status ILIKE $1;
+          campaigns.status ILIKE $1
+        ) AND campaigns.owner_id = (SELECT id FROM users WHERE email = $2)
       `,
-      values: [`%${query}%`],
+      values: [`%${query}%`, session?.user?.email],
     });
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
@@ -161,26 +179,29 @@ export async function fetchCampaignsPages(query: string) {
 }
 
 export async function fetchCampaignById(id: string) {
+  const session = await auth();
   try {
     const data = await client.query<CampaignForm>({
       text: `
         SELECT
           campaigns.id,
-          campaigns.name,
           campaigns.publisher_id,
+          campaigns.name,
           campaigns.budget,
-          campaigns.gender,
-          campaigns.age,
-          campaigns.devices,
+          campaigns.status,
           campaigns.startDate as startDate,
           campaigns.endDate as endDate,
-          campaigns.geo
+          campaigns.devices,
+          campaigns.geo,
+          campaigns.gender,
+          campaigns.age
         FROM
           campaigns
         WHERE
-          campaigns.id = $1;
+          campaigns.id = $1
+          AND campaigns.owner_id = (SELECT id FROM users WHERE email = $2)
       `,
-      values: [id],
+      values: [id, session?.user?.email],
     });
 
     const campaign = data.rows.map((campaign: CampaignForm) => ({

@@ -346,7 +346,7 @@ export default function EditCampaignForm({
         >
           Cancel
         </Link>
-        <Button type="submit" data-testid="edit-campaign">
+        <Button type="submit" data-testid="edit-campaign-button">
           Edit Campaign
         </Button>
       </div>
