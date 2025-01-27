@@ -172,6 +172,8 @@ export async function fetchCampaignById(id: string) {
           campaigns.gender,
           campaigns.age,
           campaigns.devices,
+          campaigns.startDate as startDate,
+          campaigns.endDate as endDate,
           campaigns.geo
         FROM
           campaigns

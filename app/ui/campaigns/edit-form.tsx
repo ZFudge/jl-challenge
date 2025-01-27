@@ -1,20 +1,21 @@
 "use client";
 
+import { Key, useActionState, useState } from "react";
 import { PublisherField, CampaignForm } from "@/app/lib/definitions";
 import {
-  CheckIcon,
-  ClockIcon,
   CurrencyDollarIcon,
+  GlobeAltIcon,
   DevicePhoneMobileIcon,
-  TagIcon,
   UserCircleIcon,
+  TagIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { updateCampaign, State } from "@/app/lib/actions";
-import { useActionState, useState } from "react";
 import { PillboxSelect } from "@/components/ui/pillbox-select";
-import { devices } from "@/app/lib/placeholder-data";
+import GeographicFormSection from "@/components/ui/geographic-form-section";
+import { Calendar } from "@/components/ui/calendar";
+import { devices, deviceIdToNameMapping } from "@/app/lib/placeholder-data";
 
 export default function EditCampaignForm({
   campaign,
@@ -25,11 +26,23 @@ export default function EditCampaignForm({
 }) {
   const initialState: State = { message: null, errors: {} };
   const updateCampaignWithId = updateCampaign.bind(null, campaign.id);
-  const [state, formAction] = useActionState(updateCampaignWithId, initialState);
+  const [state, formAction] = useActionState<State, FormData>(
+    updateCampaignWithId as unknown as (
+      state: State,
+      payload: FormData,
+    ) => Promise<State>,
+    initialState,
+  );
+  const [startDate, setStartDate] = useState<Date | undefined>(
+    (campaign.startdate && new Date(campaign.startdate)) || new Date(),
+  );
+  const [endDate, setEndDate] = useState<Date | undefined>(
+    (campaign.enddate && new Date(campaign.enddate)) || new Date(),
+  );
   const [devicesSelected, setDevicesSelected] = useState<string[]>(
     Object.values(campaign.devices || {}),
   );
-  console.log(`campaign: ${JSON.stringify(campaign)}`);
+  console.log(`campaign = ${JSON.stringify(campaign)}`);
 
   return (
     <form action={formAction}>
@@ -69,7 +82,10 @@ export default function EditCampaignForm({
 
           {/* Publisher Name */}
           <div className="mb-6 min-w-[40%] max-w-[100%]">
-            <label htmlFor="publisher" className="mb-2 block text-sm font-medium">
+            <label
+              htmlFor="publisher"
+              className="mb-2 block text-sm font-medium"
+            >
               Choose publisher
             </label>
             <div className="relative">
@@ -102,7 +118,7 @@ export default function EditCampaignForm({
             </div>
           </div>
 
-          {/* Campaign Budget */}
+          {/* Budget */}
           <div className="mb-6 min-w-[40%] max-w-[100%]">
             <label htmlFor="budget" className="mb-2 block text-sm font-medium">
               Choose an budget
@@ -113,26 +129,63 @@ export default function EditCampaignForm({
                   id="budget"
                   name="budget"
                   type="number"
-                  defaultValue={campaign.budget}
                   step="0.01"
                   placeholder="Enter USD budget"
                   className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
                   aria-describedby="budget-error"
+                  defaultValue={campaign.budget}
                 />
                 <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
               </div>
             </div>
 
             <div id="budget-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.budget &&
-                state.errors.budget.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
-                    {error}
-                  </p>
-                ))}
+              {state.errors?.budget && (
+                <p
+                  className="mt-2 text-sm text-red-500"
+                  key={state.errors?.budget.toString()}
+                >
+                  {state.errors?.budget}
+                </p>
+              )}
             </div>
           </div>
-          {/* end budget */}
+
+          {/* Devices */}
+          <div className="mb-6 min-w-[40%] max-w-[100%]">
+            <label htmlFor="devices" className="mb-2 block text-sm font-medium">
+              Choose devices
+            </label>
+            <div className="relative mt-2 rounded-md">
+              <div className="relative">
+                <PillboxSelect
+                  data={devices}
+                  onValueChange={setDevicesSelected}
+                  placeholder="Select Devices"
+                  defaultValue={devicesSelected}
+                />
+                <DevicePhoneMobileIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+                <input
+                  id="devices"
+                  type="hidden"
+                  name="devices"
+                  value={devicesSelected}
+                />
+              </div>
+            </div>
+
+            <div id="devices-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.devices && (
+                <p
+                  className="mt-2 text-sm text-red-500"
+                  key={state.errors?.devices.toString()}
+                >
+                  {state.errors?.devices}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* end devices */}
 
           {/* gender */}
           <div className="mb-6 min-w-[40%] max-w-[100%]">
@@ -224,45 +277,64 @@ export default function EditCampaignForm({
           </div>
           {/* end age */}
 
-          {/* Devices */}
+          {/* geo */}
           <div className="mb-6 min-w-[40%] max-w-[100%]">
-            <label htmlFor="devices" className="mb-2 block text-sm font-medium">
-              Choose devices
-            </label>
-            <div className="relative mt-2 rounded-md">
-              <div className="relative">
-                <PillboxSelect
-                  data={devices}
-                  onValueChange={setDevicesSelected}
-                  placeholder="Select Devices"
-                  defaultValue={devicesSelected}
-                />
-                <input
-                  id="devices"
-                  type="hidden"
-                  name="devices"
-                  value={devicesSelected}
-                />
-                <DevicePhoneMobileIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500" />
+            <GeographicFormSection {...campaign.geo} />
+          </div>
+          {/* end geo */}
+
+          {/* Start-End Dates */}
+          <fieldset>
+            <legend className="mb-2 block text-sm font-medium">
+              Set start and end dates
+            </legend>
+            <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
+              <div className="flex gap-4">
+                <div className="flex">
+                  <Calendar
+                    id="start-date"
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    className="rounded-md border"
+                  />
+                  <input
+                    type="hidden"
+                    name="startDate"
+                    value={startDate?.valueOf()}
+                  />
+                </div>
+                <div className="flex items-center">
+                  <Calendar
+                    id="end-date"
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    className="rounded-md border"
+                  />
+                  <input
+                    type="hidden"
+                    name="endDate"
+                    value={endDate?.valueOf()}
+                  />
+                </div>
               </div>
             </div>
-
-            <div id="devices-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.devices && (
+            <div id="start-date-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.startDate && (
                 <p
                   className="mt-2 text-sm text-red-500"
-                  key={state.errors?.devices.toString()}
+                  key={state.errors?.startDate.toString()}
                 >
-                  {state.errors?.devices}
+                  {state.errors?.startDate}
                 </p>
               )}
             </div>
-          </div>
-          {/* end devices */}
+          </fieldset>
 
           <div aria-live="polite" aria-atomic="true">
             {state.message ? (
-              <p className="my-2 text-sm text-red-500">{state.message}</p>
+              <p className="mt-2 text-sm text-red-500">{state.message}</p>
             ) : null}
           </div>
         </div>
@@ -274,7 +346,7 @@ export default function EditCampaignForm({
         >
           Cancel
         </Link>
-        <Button type="submit" data-testid="edit-campaign-button">
+        <Button type="submit" data-testid="edit-campaign">
           Edit Campaign
         </Button>
       </div>

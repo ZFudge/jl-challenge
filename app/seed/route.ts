@@ -35,28 +35,34 @@ async function seedCampaigns() {
   await client.query(`
     CREATE TABLE IF NOT EXISTS campaigns (
       id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+      owner_id UUID NOT NULL,
       name VARCHAR(255) NOT NULL,
       publisher_id UUID NOT NULL,
       budget INT NOT NULL,
-      status VARCHAR(255) NOT NULL,
       date DATE NOT NULL,
+      status VARCHAR(255) NOT NULL,
       gender VARCHAR(255),
       age VARCHAR(255),
       devices JSONB,
-      geo JSONB
+      geo JSONB,
+      startDate DATE,
+      endDate DATE
     );
   `);
 
   const insertedCampaigns = await Promise.all(
     campaigns.map((campaign) =>
       client.query({
-        text: "INSERT INTO campaigns (name, publisher_id, budget, date, status, gender, age, devices, geo) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING",
+        text: "INSERT INTO campaigns (owner_id, name, publisher_id, budget, date, status, gender, age, devices, geo, startDate, endDate) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) ON CONFLICT (id) DO NOTHING",
         values: [
+          campaign.owner_id,
           campaign.name,
           campaign.publisher_id,
           campaign.budget,
           campaign.date,
           campaign.status,
+          null,
+          null,
           null,
           null,
           null,

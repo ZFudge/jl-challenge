@@ -77,15 +77,27 @@ export type PublisherField = {
   name: string;
 };
 
+export type Geo = {
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  zipCode?: string | null;
+};
+
 export type CampaignForm = {
   id: string;
-  name: string;
   publisher_id: string;
+  name: string;
   budget: number;
-  gender: string;
-  age: string;
-  devices: string;
-  geo: string;
+  status: "pending" | "active" | "archived";
+  startDate: string;
+  endDate: string;
+  startdate: string;
+  enddate: string;
+  devices: Record<string, string> | null;
+  gender: string | null;
+  age: string | null;
+  geo: Geo | null;
 };
 
 export type Breadcrumb = {

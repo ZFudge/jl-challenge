@@ -3,8 +3,6 @@
 import { PublisherField } from "@/app/lib/definitions";
 import Link from "next/link";
 import {
-  CheckIcon,
-  ClockIcon,
   CurrencyDollarIcon,
   DevicePhoneMobileIcon,
   TagIcon,
@@ -15,11 +13,15 @@ import { createCampaign, State } from "@/app/lib/actions";
 import { useActionState, useState } from "react";
 import { PillboxSelect } from "@/components/ui/pillbox-select";
 import { devices } from "@/app/lib/placeholder-data";
+import { Calendar } from "@/components/ui/calendar";
+import GeographicFormSection from "@/components/ui/geographic-form-section";
 
 export default function Form({ publishers }: { publishers: PublisherField[] }) {
   const initialState: State = { message: null, errors: {} };
   const [state, formAction] = useActionState(createCampaign, initialState);
 
+  const [startDate, setStartDate] = useState<Date | undefined>(new Date());
+  const [endDate, setEndDate] = useState<Date | undefined>(new Date());
   const [devicesSelected, setDevicesSelected] = useState<string[]>([]);
 
   return (
@@ -254,6 +256,61 @@ export default function Form({ publishers }: { publishers: PublisherField[] }) {
             </div>
           </div>
           {/* end devices */}
+
+          {/* geo */}
+          <div className="mb-6 min-w-[40%] max-w-[100%]">
+            <GeographicFormSection />
+          </div>
+
+          {/* Start-End Dates */}
+          <fieldset>
+            <legend className="mb-2 block text-sm font-medium">
+              Set Start and End Dates
+            </legend>
+            <div className="rounded-md border border-gray-200 bg-white px-[14px] py-3">
+              <div className="flex gap-4">
+                <div className="flex">
+                  <Calendar
+                    id="start-date"
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    className="rounded-md border"
+                  />
+                  <input
+                    type="hidden"
+                    name="startDate"
+                    value={startDate?.valueOf()}
+                  />
+                </div>
+                <div className="flex items-center">
+                  <Calendar
+                    id="end-date"
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    className="rounded-md border"
+                  />
+                  <input
+                    type="hidden"
+                    name="endDate"
+                    value={endDate?.valueOf()}
+                  />
+                </div>
+              </div>
+            </div>
+            <div id="start-date-error" aria-live="polite" aria-atomic="true">
+              {state.errors?.startDate && (
+                <p
+                  className="mt-2 text-sm text-red-500"
+                  key={state.errors?.startDate.toString()}
+                >
+                  {state.errors?.startDate}
+                </p>
+              )}
+            </div>
+          </fieldset>
+          {/* end start-end dates */}
 
           <div aria-live="polite" aria-atomic="true">
             {state.message ? (
