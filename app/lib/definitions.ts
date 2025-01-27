@@ -12,12 +12,14 @@ export type Publisher = {
   image_url: string;
 };
 
+export type Status = "pending" | "active" | "archived" | "paused";
+
 export type Campaign = {
   id: string;
   publisher_id: string;
   budget: number;
   date: string;
-  status: "pending" | "active" | "archived";
+  status: Status;
 };
 
 export type Spend = {
@@ -47,7 +49,7 @@ export type CampaignsTable = {
   image_url: string;
   date: string;
   budget: number;
-  status: "pending" | "paid";
+  status: Status;
 };
 
 export type PublishersTableType = {
@@ -75,11 +77,27 @@ export type PublisherField = {
   name: string;
 };
 
+export type Geo = {
+  country?: string | null;
+  state?: string | null;
+  city?: string | null;
+  zipCode?: string | null;
+};
+
 export type CampaignForm = {
   id: string;
-  name: string;
   publisher_id: string;
+  name: string;
   budget: number;
+  status: "pending" | "active" | "archived";
+  startDate: string;
+  endDate: string;
+  startdate: string;
+  enddate: string;
+  devices: Record<string, string> | null;
+  gender: string | null;
+  age: string | null;
+  geo: Geo | null;
 };
 
 export type Breadcrumb = {

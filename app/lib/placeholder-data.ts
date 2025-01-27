@@ -69,8 +69,12 @@ type Campaign = {
   owner_id: string;
   budget: number;
   name: string;
-  status: "active" | "pending";
+  status: "active" | "pending" | "archived" | "paused";
   date: string;
+  gender?: string;
+  age?: string;
+  devices?: string;
+  geo?: string;
 };
 
 const campaigns: Campaign[] = [
@@ -188,6 +192,22 @@ const devices = [
   { name: "Set Top Box", id: "3e32ebf5-b256-fb6a-3a64-6a4e52ff2bac" },
 ];
 
+const deviceNameToIdMapping = devices.reduce<{ [key: string]: string }>(
+  (acc, device) => {
+    acc[device.name] = device.id;
+    return acc;
+  },
+  {},
+);
+
+const deviceIdToNameMapping = devices.reduce<{ [key: string]: string }>(
+  (acc, device) => {
+    acc[device.id] = device.name;
+    return acc;
+  },
+  {},
+);
+
 const spend = [
   { month: "Jan", spend: 2000 },
   { month: "Feb", spend: 1800 },
@@ -209,4 +229,6 @@ export {
   campaigns,
   spend,
   devices,
+  deviceNameToIdMapping,
+  deviceIdToNameMapping,
 };
