@@ -19,6 +19,7 @@ export function UpdateCampaign({ id }: { id: string }) {
     <Link
       href={`/dashboard/campaigns/${id}/edit`}
       className="rounded-md border p-2 hover:bg-gray-100"
+      data-testid={`update-campaign-button-${id}`}
     >
       <PencilIcon className="w-5" />
     </Link>
@@ -30,7 +31,11 @@ export function DeleteCampaign({ id }: { id: string }) {
 
   return (
     <form action={deleteCampaignWithId}>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+      <button
+        type="submit"
+        className="rounded-md border p-2 hover:bg-gray-100"
+        data-testid={`delete-campaign-button-${id}`}
+      >
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5" />
       </button>
